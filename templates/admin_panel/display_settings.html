@@ -1,0 +1,485 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block admin_title %}Cài đặt hiển thị - Admin Panel{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Cài đặt hiển thị</li>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .product-item {
+        padding: 1rem;
+        border: 1px solid #e3e6f0;
+        border-radius: var(--border-radius);
+        margin-bottom: 0.75rem;
+        background-color: white;
+        transition: all var(--transition-speed);
+    }
+    
+    .product-item:hover {
+        box-shadow: var(--box-shadow);
+    }
+    
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+        border: 1px solid #e3e6f0;
+    }
+    
+    .featured-badge {
+        background-color: var(--warning-color);
+        color: #212529;
+    }
+    
+    .order-input {
+        width: 70px;
+    }
+    
+    .tab-card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .tab-card .card-header {
+        background-color: white;
+        padding: 0;
+        border-bottom: none;
+    }
+    
+    .tab-card .nav-tabs {
+        border-bottom: none;
+    }
+    
+    .tab-card .nav-link {
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        color: var(--secondary-color);
+        border-bottom: 3px solid transparent;
+    }
+    
+    .tab-card .nav-link.active {
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--primary-color);
+        background-color: transparent;
+    }
+    
+    .tab-card .nav-link:hover:not(.active) {
+        border-bottom: 3px solid #e3e6f0;
+    }
+    
+    .tab-card .nav-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .tab-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .tab-card .tab-pane {
+        padding: 1rem 0;
+    }
+    
+    .search-box {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-box .form-control {
+        padding-left: 2.5rem;
+    }
+    
+    .search-box .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Cài đặt hiển thị</h1>
+    </div>
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Settings Tabs Card -->
+    <div class="card tab-card">
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured" type="button" role="tab" aria-controls="featured" aria-selected="true">
+                        <i class="fas fa-star"></i>Sản phẩm nổi bật
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="order-tab" data-bs-toggle="tab" data-bs-target="#order" type="button" role="tab" aria-controls="order" aria-selected="false">
+                        <i class="fas fa-sort-numeric-down"></i>Thứ tự hiển thị
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="seo-tab" data-bs-toggle="tab" data-bs-target="#seo" type="button" role="tab" aria-controls="seo" aria-selected="false">
+                        <i class="fas fa-search"></i>SEO
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="false">
+                        <i class="fas fa-folder"></i>Danh mục
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card-body">
+            <div class="tab-content" id="settingsTabsContent">
+                <!-- Featured Products Tab -->
+                <div class="tab-pane fade show active" id="featured" role="tabpanel" aria-labelledby="featured-tab">
+                    <h5 class="mb-3">Quản lý sản phẩm nổi bật</h5>
+                    <p class="text-muted">Chọn các sản phẩm sẽ hiển thị ở mục "Sản phẩm nổi bật" trên trang chủ.</p>
+                    
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="featuredSearch" class="form-control" placeholder="Tìm kiếm sản phẩm...">
+                    </div>
+                    
+                    <form method="post" action="" id="featuredForm">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            {% for product in all_products %}
+                            <div class="col-md-6 mb-3 product-item-wrapper" data-product-name="{{ product.name|lower }}">
+                                <div class="product-item d-flex align-items-center">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="featured_products" value="{{ product.id }}" id="featured_{{ product.id }}" {% if product.is_featured %}checked{% endif %}>
+                                    </div>
+                                    
+                                    {% with main_image=product.images.all|dictsort:"is_main"|last %}
+                                    {% if main_image %}
+                                    <img src="{{ main_image.image.url }}" alt="{{ product.name }}" class="product-image mx-2">
+                                    {% else %}
+                                    <div class="product-image bg-light d-flex align-items-center justify-content-center mx-2">
+                                        <i class="fas fa-image text-secondary"></i>
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                    
+                                    <div class="ms-2">
+                                        <label class="form-check-label" for="featured_{{ product.id }}">
+                                            <strong>{{ product.name }}</strong>
+                                        </label>
+                                        <div class="small text-muted">{{ product.category.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    Không có sản phẩm nào.
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" name="update_featured" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Display Order Tab -->
+                <div class="tab-pane fade" id="order" role="tabpanel" aria-labelledby="order-tab">
+                    <h5 class="mb-3">Quản lý thứ tự hiển thị</h5>
+                    <p class="text-muted">Thiết lập thứ tự hiển thị cho sản phẩm (số nhỏ hơn sẽ hiển thị trước).</p>
+                    
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="orderSearch" class="form-control" placeholder="Tìm kiếm sản phẩm...">
+                    </div>
+                    
+                    <form method="post" action="" id="orderForm">
+                        {% csrf_token %}
+                        <div class="table-responsive">
+                            <table class="table admin-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px">Hình ảnh</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Danh mục</th>
+                                        <th style="width: 120px">Thứ tự hiển thị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in all_products %}
+                                    <tr class="product-row" data-product-name="{{ product.name|lower }}">
+                                        <td>
+                                            {% with main_image=product.images.all|dictsort:"is_main"|last %}
+                                            {% if main_image %}
+                                            <img src="{{ main_image.image.url }}" alt="{{ product.name }}" class="product-image">
+                                            {% else %}
+                                            <div class="product-image bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-image text-secondary"></i>
+                                            </div>
+                                            {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ product.name }}</strong>
+                                                {% if product.is_featured %}
+                                                <span class="badge featured-badge ms-2">
+                                                    <i class="fas fa-star me-1"></i>Nổi bật
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>{{ product.category.name }}</td>
+                                        <td>
+                                            <input type="hidden" name="product_id[]" value="{{ product.id }}">
+                                            <input type="number" name="display_order[]" value="{{ product.display_order }}" class="form-control form-control-sm order-input" min="0">
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="fas fa-box fa-2x mb-3"></i>
+                                                <p>Không có sản phẩm nào.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit" name="update_order" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- SEO Tab -->
+                <div class="tab-pane fade" id="seo" role="tabpanel" aria-labelledby="seo-tab">
+                    <h5 class="mb-3">Quản lý SEO</h5>
+                    <p class="text-muted">Cập nhật thông tin SEO cho từng sản phẩm.</p>
+                    
+                    <form method="post" action="" id="seoForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="seo_product_select" class="form-label">Chọn sản phẩm</label>
+                            <select id="seo_product_select" class="form-select" onchange="loadProductSeo(this.value)">
+                                <option value="">-- Chọn sản phẩm --</option>
+                                {% for product in all_products %}
+                                <option value="{{ product.id }}" 
+                                    data-meta-title="{{ product.meta_title }}"
+                                    data-meta-description="{{ product.meta_description }}"
+                                    data-meta-keywords="{{ product.meta_keywords }}">
+                                    {{ product.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="seo-fields" class="d-none">
+                            <input type="hidden" name="seo_product_id" id="seo_product_id" value="">
+                            
+                            <div class="mb-3">
+                                <label for="meta_title" class="form-label">Meta Title</label>
+                                <input type="text" class="form-control" id="meta_title" name="meta_title" maxlength="200">
+                                <div class="form-text">Tiêu đề hiển thị trên kết quả tìm kiếm (tối đa 60-70 ký tự)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="meta_description" class="form-label">Meta Description</label>
+                                <textarea class="form-control" id="meta_description" name="meta_description" rows="3"></textarea>
+                                <div class="form-text">Mô tả hiển thị trên kết quả tìm kiếm (tối đa 150-160 ký tự)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                                <input type="text" class="form-control" id="meta_keywords" name="meta_keywords">
+                                <div class="form-text">Các từ khóa phân cách bằng dấu phẩy</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="update_seo" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Categories Tab -->
+                <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+                    <h5 class="mb-3">Quản lý hiển thị danh mục</h5>
+                    <p class="text-muted">Thiết lập thứ tự hiển thị và trạng thái cho danh mục.</p>
+                    
+                    <form method="post" action="" id="categoriesForm">
+                        {% csrf_token %}
+                        <div class="table-responsive">
+                            <table class="table admin-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px">Hình ảnh</th>
+                                        <th>Tên danh mục</th>
+                                        <th style="width: 120px">Thứ tự hiển thị</th>
+                                        <th style="width: 120px">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in categories %}
+                                    <tr>
+                                        <td>
+                                            {% if category.image %}
+                                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="product-image">
+                                            {% else %}
+                                            <div class="product-image bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-folder text-secondary"></i>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ category.name }}</strong>
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="category_id[]" value="{{ category.id }}">
+                                            <input type="number" class="form-control form-control-sm" name="category_display_order[]" value="{{ category.display_order }}" min="0">
+                                            <div class="form-text small">0 = Off (không hiển thị)</div>
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="category_is_active[]" value="{{ category.id }}" id="category_active_{{ category.id }}" {% if category.is_active %}checked{% endif %}>
+                                                <label class="form-check-label" for="category_active_{{ category.id }}">
+                                                    Hiển thị
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="fas fa-folder-open fa-2x mb-3"></i>
+                                                <p>Không có danh mục nào.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit" name="update_categories" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tabs
+        const triggerTabList = [].slice.call(document.querySelectorAll('#settingsTabs button'));
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl);
+            
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+        
+        // Featured products search
+        const featuredSearch = document.getElementById('featuredSearch');
+        if (featuredSearch) {
+            featuredSearch.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const productItems = document.querySelectorAll('.product-item-wrapper');
+                
+                productItems.forEach(item => {
+                    const productName = item.getAttribute('data-product-name');
+                    if (productName.includes(searchValue)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Order products search
+        const orderSearch = document.getElementById('orderSearch');
+        if (orderSearch) {
+            orderSearch.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const productRows = document.querySelectorAll('.product-row');
+                
+                productRows.forEach(row => {
+                    const productName = row.getAttribute('data-product-name');
+                    if (productName.includes(searchValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+    
+    // Load product SEO data
+    function loadProductSeo(productId) {
+        const seoFields = document.getElementById('seo-fields');
+        const productIdInput = document.getElementById('seo_product_id');
+        const metaTitleInput = document.getElementById('meta_title');
+        const metaDescriptionInput = document.getElementById('meta_description');
+        const metaKeywordsInput = document.getElementById('meta_keywords');
+        
+        if (productId) {
+            const option = document.querySelector(`#seo_product_select option[value="${productId}"]`);
+            
+            productIdInput.value = productId;
+            metaTitleInput.value = option.dataset.metaTitle || '';
+            metaDescriptionInput.value = option.dataset.metaDescription || '';
+            metaKeywordsInput.value = option.dataset.metaKeywords || '';
+            
+            seoFields.classList.remove('d-none');
+        } else {
+            seoFields.classList.add('d-none');
+        }
+    }
+</script>
+{% endblock %} 

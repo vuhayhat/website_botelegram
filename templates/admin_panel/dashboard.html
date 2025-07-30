@@ -1,0 +1,205 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block admin_title %}Dashboard - Admin Panel{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row">
+        <!-- Products Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card stats-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Sản phẩm
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_products }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a href="{% url 'admin_products' %}" class="text-primary text-decoration-none">
+                        Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card stats-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Danh mục
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_categories }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a href="{% url 'admin_categories' %}" class="text-success text-decoration-none">
+                        Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card stats-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Đơn hàng
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_orders|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a href="{% url 'admin_orders' %}" class="text-info text-decoration-none">
+                        Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Products Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card stats-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                Sản phẩm nổi bật
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">{{ featured_products|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a href="{% url 'admin_display_settings' %}" class="text-warning text-decoration-none">
+                        Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Quick Actions Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card admin-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Thao tác nhanh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_product_add' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-2"></i> Thêm sản phẩm
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_category_add' %}" class="btn btn-success w-100">
+                                <i class="fas fa-plus me-2"></i> Thêm danh mục
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_display_settings' %}" class="btn btn-info w-100 text-white">
+                                <i class="fas fa-cog me-2"></i> Cài đặt hiển thị
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_orders' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-shopping-cart me-2"></i> Xem đơn hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card admin-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Hoạt động gần đây</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activities %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                {% if activity.action_type == 'create' %}
+                                <div class="activity-icon bg-success text-white me-3">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                {% elif activity.action_type == 'update' %}
+                                <div class="activity-icon bg-primary text-white me-3">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                {% elif activity.action_type == 'delete' %}
+                                <div class="activity-icon bg-danger text-white me-3">
+                                    <i class="fas fa-trash"></i>
+                                </div>
+                                {% else %}
+                                <div class="activity-icon bg-secondary text-white me-3">
+                                    <i class="fas fa-info"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <p class="mb-0">{{ activity.description }}</p>
+                                    <p class="activity-time mb-0">
+                                        <span>{{ activity.admin.phone_number }}</span> • 
+                                        <span>{{ activity.timestamp|date:"d/m/Y, H:i" }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center py-4">
+                            <i class="fas fa-info-circle mb-2 text-muted"></i>
+                            <p class="text-muted mb-0">Không có hoạt động nào gần đây.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if recent_activities %}
+                <div class="card-footer bg-transparent text-end">
+                    <a href="#" class="text-primary text-decoration-none">
+                        Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

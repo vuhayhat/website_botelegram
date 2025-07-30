@@ -1,0 +1,531 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block admin_title %}Quản lý đơn hàng - Admin Panel{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Đơn hàng</li>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .status-pending {
+        background-color: var(--warning-color);
+        color: #212529;
+    }
+    
+    .status-processing {
+        background-color: var(--info-color);
+        color: white;
+    }
+    
+    .status-completed {
+        background-color: var(--success-color);
+        color: white;
+    }
+    
+    .status-cancelled {
+        background-color: var(--danger-color);
+        color: white;
+    }
+    
+    .order-detail-header {
+        background-color: #f8f9fc;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-detail-header h6 {
+        margin-bottom: 0.5rem;
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    .order-detail-header p {
+        margin-bottom: 0.25rem;
+    }
+    
+    .order-product {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .order-product:last-child {
+        border-bottom: none;
+    }
+    
+    .order-product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+        margin-right: 1rem;
+    }
+    
+    .order-product-details {
+        flex-grow: 1;
+    }
+    
+    .order-product-price {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .search-box {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-box .form-control {
+        padding-left: 2.5rem;
+    }
+    
+    .search-box .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quản lý đơn hàng</h1>
+    </div>
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Orders Card -->
+    <div class="card admin-card">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="orderSearch" class="form-control" placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng...">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i> Lọc
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                            <li><a class="dropdown-item" href="?status=pending">Chờ xử lý</a></li>
+                            <li><a class="dropdown-item" href="?status=processing">Đang xử lý</a></li>
+                            <li><a class="dropdown-item" href="?status=completed">Hoàn thành</a></li>
+                            <li><a class="dropdown-item" href="?status=cancelled">Đã hủy</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="?">Tất cả</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table admin-table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th style="width: 100px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="order-row" data-order-id="{{ order.order_number }}" data-customer-name="{{ order.full_name }}">
+                            <td>#{{ order.order_number }}</td>
+                            <td>{{ order.full_name }}</td>
+                            <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ order.order_total|floatformat:0 }} VND</td>
+                            <td>
+                                {% if order.status == 'pending' %}
+                                    <span class="badge status-badge status-pending">Chờ xử lý</span>
+                                {% elif order.status == 'processing' %}
+                                    <span class="badge status-badge status-processing">Đang xử lý</span>
+                                {% elif order.status == 'shipped' %}
+                                    <span class="badge status-badge status-processing">Đã gửi hàng</span>
+                                {% elif order.status == 'delivered' %}
+                                    <span class="badge status-badge status-completed">Đã giao hàng</span>
+                                {% elif order.status == 'cancelled' %}
+                                    <span class="badge status-badge status-cancelled">Đã hủy</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-primary view-order" data-bs-toggle="tooltip" title="Xem chi tiết" data-order-id="{{ order.order_number }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success update-status" data-bs-toggle="tooltip" title="Cập nhật trạng thái" data-order-id="{{ order.order_number }}">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                    <p>Chưa có đơn hàng nào</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <nav aria-label="Orders pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Modal xem chi tiết đơn hàng -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #ORD-001</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="order-detail-header">
+                                <h6><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                                <p class="mb-1"><strong>Tên:</strong> Nguyễn Văn A</p>
+                                <p class="mb-1"><strong>Số điện thoại:</strong> 0123456789</p>
+                                <p class="mb-1"><strong>Email:</strong> nguyenvana@example.com</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="order-detail-header">
+                                <h6><i class="fas fa-shipping-fast me-2"></i>Thông tin giao hàng</h6>
+                                <p class="mb-1"><strong>Địa chỉ:</strong> 123 Đường ABC, Quận XYZ, TP. HCM</p>
+                                <p class="mb-1"><strong>Ghi chú:</strong> Giao hàng giờ hành chính</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card admin-card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-box me-2"></i>Sản phẩm</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="order-products">
+                                <div class="order-product">
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center order-product-image">
+                                        <i class="fas fa-box text-secondary"></i>
+                                    </div>
+                                    <div class="order-product-details">
+                                        <div class="fw-bold">Sản phẩm A</div>
+                                        <div class="small text-muted">Số lượng: 2</div>
+                                    </div>
+                                    <div class="order-product-price">
+                                        500,000 VND x 2
+                                    </div>
+                                </div>
+                                <div class="order-product">
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center order-product-image">
+                                        <i class="fas fa-box text-secondary"></i>
+                                    </div>
+                                    <div class="order-product-details">
+                                        <div class="fw-bold">Sản phẩm B</div>
+                                        <div class="small text-muted">Số lượng: 1</div>
+                                    </div>
+                                    <div class="order-product-price">
+                                        500,000 VND x 1
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-light border-top">
+                                <div class="d-flex justify-content-between">
+                                    <div class="fw-bold">Tổng cộng:</div>
+                                    <div class="fw-bold">1,500,000 VND</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card admin-card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Trạng thái đơn hàng</h6>
+                        </div>
+                        <div class="card-body">
+                            <form id="updateStatusForm">
+                                <div class="mb-3">
+                                    <label for="orderStatus" class="form-label">Cập nhật trạng thái</label>
+                                    <select class="form-select" id="orderStatus">
+                                        <option value="pending">Chờ xử lý</option>
+                                        <option value="processing">Đang xử lý</option>
+                                        <option value="completed">Hoàn thành</option>
+                                        <option value="cancelled">Đã hủy</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="statusNote" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="statusNote" rows="2" placeholder="Ghi chú về việc thay đổi trạng thái (không bắt buộc)"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="saveStatusBtn">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal cập nhật trạng thái đơn hàng -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateStatusModalLabel">Cập nhật trạng thái đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickUpdateStatusForm">
+                        <div class="mb-3">
+                            <label for="quickOrderStatus" class="form-label">Trạng thái mới</label>
+                            <select class="form-select" id="quickOrderStatus">
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="processing">Đang xử lý</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="cancelled">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quickStatusNote" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="quickStatusNote" rows="2" placeholder="Ghi chú về việc thay đổi trạng thái (không bắt buộc)"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="quickSaveStatusBtn">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Order search functionality
+        const orderSearch = document.getElementById('orderSearch');
+        if (orderSearch) {
+            orderSearch.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const orderRows = document.querySelectorAll('.order-row');
+                
+                orderRows.forEach(row => {
+                    const orderId = row.getAttribute('data-order-id').toLowerCase();
+                    const customerName = row.getAttribute('data-customer-name').toLowerCase();
+                    
+                    if (orderId.includes(searchValue) || customerName.includes(searchValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // View order details
+        const viewButtons = document.querySelectorAll('.view-order');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                document.getElementById('orderDetailModalLabel').textContent = `Chi tiết đơn hàng #${orderId}`;
+                
+                // Ở đây sẽ là code để tải dữ liệu đơn hàng từ server
+                // Hiện tại chỉ hiển thị modal với dữ liệu mẫu
+                
+                const orderDetailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+                orderDetailModal.show();
+            });
+        });
+        
+        // Update order status
+        const updateButtons = document.querySelectorAll('.update-status');
+        updateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                document.getElementById('updateStatusModalLabel').textContent = `Cập nhật trạng thái đơn hàng #${orderId}`;
+                
+                // Lưu order ID để sử dụng khi lưu
+                document.getElementById('quickUpdateStatusForm').setAttribute('data-order-id', orderId);
+                
+                const updateStatusModal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+                updateStatusModal.show();
+            });
+        });
+        
+        // Save status changes
+        document.getElementById('saveStatusBtn').addEventListener('click', function() {
+            // Ở đây sẽ là code để lưu thay đổi trạng thái đơn hàng
+            alert('Đã cập nhật trạng thái đơn hàng!');
+            const orderDetailModal = bootstrap.Modal.getInstance(document.getElementById('orderDetailModal'));
+            orderDetailModal.hide();
+        });
+        
+        // Quick save status changes
+        document.getElementById('quickSaveStatusBtn').addEventListener('click', function() {
+            const form = document.getElementById('quickUpdateStatusForm');
+            const orderId = form.getAttribute('data-order-id');
+            const newStatus = document.getElementById('quickOrderStatus').value;
+            const note = document.getElementById('quickStatusNote').value;
+            
+            // Hiển thị loading
+            const saveBtn = document.getElementById('quickSaveStatusBtn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            saveBtn.disabled = true;
+            
+            // Lấy CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Gửi request cập nhật trạng thái
+            fetch('{% url "admin_update_order_status" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams({
+                    'order_number': orderId,
+                    'status': newStatus,
+                    'note': note
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cập nhật UI
+                    const orderRow = document.querySelector(`[data-order-id="${orderId}"]`);
+                    const statusCell = orderRow.querySelector('td:nth-child(5)');
+                    
+                    // Xóa tất cả badge cũ
+                    statusCell.innerHTML = '';
+                    
+                    // Thêm badge mới
+                    let badgeClass = '';
+                    let badgeText = '';
+                    
+                    switch(newStatus) {
+                        case 'pending':
+                            badgeClass = 'status-pending';
+                            badgeText = 'Chờ xử lý';
+                            break;
+                        case 'processing':
+                            badgeClass = 'status-processing';
+                            badgeText = 'Đang xử lý';
+                            break;
+                        case 'shipped':
+                            badgeClass = 'status-processing';
+                            badgeText = 'Đã gửi hàng';
+                            break;
+                        case 'delivered':
+                            badgeClass = 'status-completed';
+                            badgeText = 'Đã giao hàng';
+                            break;
+                        case 'cancelled':
+                            badgeClass = 'status-cancelled';
+                            badgeText = 'Đã hủy';
+                            break;
+                    }
+                    
+                    statusCell.innerHTML = `<span class="badge status-badge ${badgeClass}">${badgeText}</span>`;
+                    
+                    // Hiển thị thông báo thành công
+                    showAlert('success', data.message);
+                    
+                    // Đóng modal
+                    const updateStatusModal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
+                    updateStatusModal.hide();
+                } else {
+                    showAlert('danger', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            })
+            .finally(() => {
+                // Khôi phục button
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        });
+        
+        // Function to show alerts
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.querySelector('.container-fluid');
+            const firstChild = container.firstChild;
+            container.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Tự động ẩn sau 5 giây
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %} 

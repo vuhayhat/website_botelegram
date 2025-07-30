@@ -1,0 +1,299 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Thanh toán{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-section {
+        margin-bottom: 30px;
+    }
+    
+    .checkout-summary {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 20px;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .summary-total {
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    
+    .cart-items {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .cart-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .required-field::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'cart' %}">Giỏ hàng</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Thanh toán</li>
+    </ol>
+</nav>
+
+<h1 class="mb-4">Thanh toán</h1>
+
+<div class="row">
+    <!-- Checkout Form -->
+    <div class="col-lg-8">
+        <form method="post" id="checkout-form">
+            {% csrf_token %}
+            
+            <!-- Shipping Information -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="section-title">Thông tin giao hàng</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label required-field">Họ và tên</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label required-field">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                        <div class="form-text">Nhận thông tin đơn hàng qua email (không bắt buộc)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label required-field">Địa chỉ</label>
+                        <input type="text" class="form-control" id="address" name="address" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label required-field">Thành phố</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="country" class="form-label required-field">Quốc gia</label>
+                            <select class="form-select" id="country" name="country" required>
+                                <option value="">Chọn quốc gia</option>
+                                <option value="Vietnam" selected>Việt Nam</option>
+                                <option value="United States">United States</option>
+                                <option value="China">China</option>
+                                <option value="Japan">Japan</option>
+                                <option value="South Korea">South Korea</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Indonesia">Indonesia</option>
+                                <option value="Philippines">Philippines</option>
+                                <!-- Thêm các quốc gia khác nếu cần -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="postal_code" class="form-label">Mã bưu điện</label>
+                        <input type="text" class="form-control" id="postal_code" name="postal_code">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Notes -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="section-title">Ghi chú đơn hàng</h3>
+                    
+                    <div class="mb-3">
+                        <label for="order_note" class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="order_note" name="order_note" rows="3" placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Method -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="section-title">Phương thức thanh toán</h3>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment_method" id="payment_cod" value="cod" checked>
+                        <label class="form-check-label" for="payment_cod">
+                            <i class="fas fa-money-bill-wave me-2"></i>Thanh toán khi nhận hàng (COD)
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment_method" id="payment_bank" value="bank">
+                        <label class="form-check-label" for="payment_bank">
+                            <i class="fas fa-university me-2"></i>Chuyển khoản ngân hàng
+                        </label>
+                    </div>
+                    
+                    <div id="bank_details" class="mt-3 p-3 bg-light rounded" style="display: none;">
+                        <h6>Thông tin chuyển khoản:</h6>
+                        <p class="mb-1">Ngân hàng: VIETCOMBANK</p>
+                        <p class="mb-1">Số tài khoản: 1234567890</p>
+                        <p class="mb-1">Chủ tài khoản: CÔNG TY TNHH MMO</p>
+                        <p class="mb-0">Nội dung: [Họ tên] thanh toán đơn hàng</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-check-circle me-2"></i>Hoàn tất đặt hàng
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+        <div class="checkout-summary">
+            <h3 class="mb-3">Tóm tắt đơn hàng</h3>
+            
+            <!-- Cart Items -->
+            <div class="cart-items mb-3">
+                {% for item in cart_items %}
+                <div class="cart-item">
+                    <div class="d-flex">
+                        <!-- Product Image -->
+                        <div class="flex-shrink-0">
+                            {% with main_image=item.product.images.all|dictsort:"is_main"|last %}
+                            {% if main_image %}
+                            <img src="{{ main_image.image.url }}" alt="{{ item.product.name }}" class="product-image">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 4px;">
+                                <i class="fas fa-image text-secondary"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        
+                        <!-- Product Info -->
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                            <p class="mb-0 text-muted small">{{ item.quantity }} x {{ item.product.price|floatformat:0 }} VND</p>
+                            <p class="mb-0 text-primary">{{ item.subtotal|floatformat:0 }} VND</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Order Totals -->
+            <div class="summary-item">
+                <span>Tạm tính:</span>
+                <span>{{ cart.total|floatformat:0 }} VND</span>
+            </div>
+            
+            <div class="summary-item">
+                <span>Phí vận chuyển:</span>
+                <span>0 VND</span>
+            </div>
+            
+            <div class="summary-item summary-total">
+                <span>Tổng cộng:</span>
+                <span>{{ cart.total|floatformat:0 }} VND</span>
+            </div>
+            
+            <div class="mt-3">
+                <a href="{% url 'cart' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại giỏ hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý hiển thị thông tin chuyển khoản
+        const paymentBank = document.getElementById('payment_bank');
+        const paymentCod = document.getElementById('payment_cod');
+        const bankDetails = document.getElementById('bank_details');
+        
+        paymentBank.addEventListener('change', function() {
+            if (this.checked) {
+                bankDetails.style.display = 'block';
+            }
+        });
+        
+        paymentCod.addEventListener('change', function() {
+            if (this.checked) {
+                bankDetails.style.display = 'none';
+            }
+        });
+        
+        // Xử lý form thanh toán
+        const checkoutForm = document.getElementById('checkout-form');
+        
+        checkoutForm.addEventListener('submit', function(e) {
+            const requiredFields = checkoutForm.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc.');
+            }
+        });
+    });
+</script>
+{% endblock %} 

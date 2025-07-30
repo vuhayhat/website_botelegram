@@ -1,0 +1,387 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Carousel Styling */
+    .product-carousel {
+        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        padding-bottom: 10px;
+    }
+    
+    .product-carousel::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .product-carousel::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .product-carousel::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    
+    .product-carousel::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    .product-item {
+        display: inline-block;
+        width: 280px;
+        margin-right: 15px;
+        white-space: normal;
+        vertical-align: top;
+    }
+    
+    .product-item:last-child {
+        margin-right: 0;
+    }
+    
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .category-title {
+        margin-bottom: 0;
+        position: relative;
+        padding-left: 15px;
+    }
+    
+    .category-title::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background-color: var(--bs-primary);
+    }
+    
+    .view-all {
+        font-size: 0.9rem;
+    }
+    
+    .scroll-buttons {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        transform: translateY(-50%);
+        z-index: 2;
+        pointer-events: none;
+    }
+    
+    .scroll-btn {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto;
+        transition: all 0.3s ease;
+    }
+    
+    .scroll-btn:hover {
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .scroll-btn.prev {
+        left: 10px;
+    }
+    
+    .scroll-btn.next {
+        right: 10px;
+    }
+    
+    .featured-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+    }
+    
+    .product-image-container {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover .product-image {
+        transform: scale(1.05);
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        height: 400px;
+        overflow: hidden;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.2) 100%);
+        display: flex;
+        align-items: center;
+    }
+    
+    .hero-content {
+        color: white;
+        padding: 2rem;
+    }
+    
+    .section-title {
+        position: relative;
+        padding-left: 15px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .section-title::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+    }
+    
+    .section-title.featured::before {
+        background-color: var(--bs-warning);
+    }
+    
+    .section-title.categories::before {
+        background-color: var(--bs-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="hero-section shadow">
+        <img src="https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" class="hero-image" alt="Hero Image">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <div class="col-md-8 col-lg-6">
+                    <h1 class="display-4 fw-bold mb-3">Khám phá sản phẩm</h1>
+                    <p class="lead mb-4">Khám phá các sản phẩm chất lượng cao với giá cả cạnh tranh.</p>
+                    <div>
+                        <a href="#featured-products" class="btn btn-primary btn-lg me-2">Mua ngay</a>
+                        <a href="#categories" class="btn btn-outline-light btn-lg">Xem danh mục</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Featured Products Section -->
+    {% if featured_products %}
+    <div class="mb-5" id="featured-products">
+        <h2 class="section-title featured">Sản phẩm nổi bật</h2>
+        
+        <div class="row">
+            {% for product in featured_products %}
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="product-image-container">
+                        {% with main_image=product.images.all|dictsort:"is_main"|last %}
+                        {% if main_image %}
+                        <img src="{{ main_image.image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="bg-light text-center py-5">
+                            <i class="fas fa-image fa-3x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <span class="badge bg-warning featured-badge">
+                            <i class="fas fa-star me-1"></i>Nổi bật
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-muted small">{{ product.description|truncatechars:80 }}</p>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-primary">{{ product.price|floatformat:0 }} VND</span>
+                        <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Categories and Products Section -->
+    <div id="categories">
+        <h2 class="section-title categories mb-4">Danh mục sản phẩm</h2>
+        
+        {% for category in categories %}
+        {% if category.products.count > 0 %}
+        <div class="mb-5">
+            <div class="category-header">
+                <h3 class="category-title">{{ category.name }}</h3>
+                <a href="{{ category.get_absolute_url }}" class="view-all text-decoration-none">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            
+            <div class="position-relative">
+                <div class="product-carousel" id="category-{{ category.id }}">
+                    {% for product in category.products.all %}
+                    {% if product.is_available %}
+                    <div class="product-item">
+                        <div class="card h-100 shadow-sm">
+                            <div class="product-image-container">
+                                {% with main_image=product.images.all|dictsort:"is_main"|last %}
+                                {% if main_image %}
+                                <img src="{{ main_image.image.url }}" class="product-image" alt="{{ product.name }}">
+                                {% else %}
+                                <div class="bg-light text-center py-5">
+                                    <i class="fas fa-image fa-3x text-secondary"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                {% if product.is_featured %}
+                                <span class="badge bg-warning featured-badge">
+                                    <i class="fas fa-star me-1"></i>Nổi bật
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text text-muted small">{{ product.description|truncatechars:60 }}</p>
+                            </div>
+                            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-primary">{{ product.price|floatformat:0 }} VND</span>
+                                <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="scroll-buttons">
+                    <button class="scroll-btn prev" onclick="scrollCarousel('category-{{ category.id }}', 'left')">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="scroll-btn next" onclick="scrollCarousel('category-{{ category.id }}', 'right')">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="alert alert-info">
+            Không có danh mục sản phẩm nào.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function scrollCarousel(id, direction) {
+        const carousel = document.getElementById(id);
+        const scrollAmount = 300;
+        
+        if (direction === 'left') {
+            carousel.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        } else {
+            carousel.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    }
+    
+    // Check if scroll buttons should be visible
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousels = document.querySelectorAll('.product-carousel');
+        
+        carousels.forEach(carousel => {
+            const checkScrollable = () => {
+                const isScrollable = carousel.scrollWidth > carousel.clientWidth;
+                const prevBtn = carousel.parentElement.querySelector('.scroll-btn.prev');
+                const nextBtn = carousel.parentElement.querySelector('.scroll-btn.next');
+                
+                if (prevBtn && nextBtn) {
+                    if (!isScrollable) {
+                        prevBtn.style.display = 'none';
+                        nextBtn.style.display = 'none';
+                    } else {
+                        prevBtn.style.display = 'flex';
+                        nextBtn.style.display = 'flex';
+                        
+                        // Check if at start or end
+                        if (carousel.scrollLeft <= 0) {
+                            prevBtn.style.opacity = '0.5';
+                            prevBtn.style.pointerEvents = 'none';
+                        } else {
+                            prevBtn.style.opacity = '1';
+                            prevBtn.style.pointerEvents = 'auto';
+                        }
+                        
+                        if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 5) {
+                            nextBtn.style.opacity = '0.5';
+                            nextBtn.style.pointerEvents = 'none';
+                        } else {
+                            nextBtn.style.opacity = '1';
+                            nextBtn.style.pointerEvents = 'auto';
+                        }
+                    }
+                }
+            };
+            
+            // Check on load
+            checkScrollable();
+            
+            // Check on window resize
+            window.addEventListener('resize', checkScrollable);
+            
+            // Check on scroll
+            carousel.addEventListener('scroll', checkScrollable);
+        });
+    });
+</script>
+{% endblock %} 

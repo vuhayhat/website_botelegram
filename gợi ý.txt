@@ -1,0 +1,10 @@
+làm web bán hàng bằng django nhé 
+
++ chức năng chính đăng nhạp bằng số diện thoại , gg login (có sẵn ở database nhưng làm sau )
++ admin có thể thêm danh mục sản phẩm , có thể thêm sản phẩm trong danh mục sản phẩm 
++ không dùng mẫu admin có sẵn mà làm riêng dùng database sqlite3
+
+
++@http://127.0.0.1:8000/admin/products/add/ thêm ảnh phải có 2 o 1 là thêm ảnh chính 2 là thêm các ảnh phụ 
+
++phần danh mục sản phẩm sẽ có cột chọn số để hiển thị nhé , nếu đặt off thì không hiển thị , đặt 1 thì hiển thị đầu , đặt 2 thì hiển thị 2 

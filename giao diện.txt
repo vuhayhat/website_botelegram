@@ -1,0 +1,22 @@
+giao diện hiển thị sản phẩm sẽ có trên xuống là 
+ đầu tiên là các sản phẩm nổi bật được ghim lên 
+ tiếp theo là các danh mục sản phẩm có danh mục sản phẩm nhỏ thôi và các sản phẩm có thể vuốt sang để xem và nó không giới hạn như 1 vòng tròn vuốt và chạy mãi đến khi hết sản phẩm 
+ ản phẩm nổi bật đầu tiên:
+Phần sản phẩm nổi bật được đặt ở đầu trang, ngay sau hero section
+Các sản phẩm nổi bật được hiển thị với badge "Nổi bật" màu vàng
+Sản phẩm nổi bật được hiển thị dạng lưới (grid) để người dùng dễ nhìn thấy
+Danh mục sản phẩm với khả năng vuốt ngang:
+Mỗi danh mục có một phần riêng với tiêu đề danh mục và nút "Xem tất cả"
+Sản phẩm trong mỗi danh mục được hiển thị trong một carousel có thể vuốt ngang
+Người dùng có thể vuốt để xem tất cả sản phẩm trong danh mục (không giới hạn như vòng tròn)
+Có nút điều hướng trái/phải để dễ dàng di chuyển qua các sản phẩm
+Cải thiện giao diện tổng thể:
+Thiết kế hiện đại với hiệu ứng hover cho sản phẩm
+Thanh cuộn được tùy chỉnh để trông đẹp hơn
+Các nút điều hướng xuất hiện/biến mất thông minh dựa trên vị trí cuộn
+Đã Việt hóa toàn bộ giao diện
+JavaScript thông minh:
+Tự động kiểm tra xem carousel có thể cuộn hay không
+Vô hiệu hóa các nút điều hướng khi đã ở đầu/cuối danh sách
+Cuộn mượt mà khi nhấp vào nút điều hướng
+Giao diện mới này đáp ứng đầy đủ yêu cầu trong file giao diện.txt và tạo ra trải nghiệm người dùng tốt hơn, hiện đại hơn cho trang web thương mại điện tử.

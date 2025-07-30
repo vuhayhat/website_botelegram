@@ -1,0 +1,245 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết đơn hàng #{{ order.order_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-detail-header {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5em 1em;
+    }
+    
+    .status-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .status-processing {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .status-shipped {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .status-delivered {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .status-cancelled {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .order-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .summary-total {
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    
+    .info-section {
+        margin-bottom: 30px;
+    }
+    
+    .info-section h4 {
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'order_history' %}">Lịch sử đơn hàng</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn hàng</li>
+    </ol>
+</nav>
+
+<!-- Order Header -->
+<div class="order-detail-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-2">Đơn hàng #{{ order.order_number }}</h1>
+            <p class="text-muted mb-0">Đặt hàng lúc {{ order.created_at|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <span class="status-badge 
+                {% if order.status == 'pending' %}status-pending
+                {% elif order.status == 'processing' %}status-processing
+                {% elif order.status == 'shipped' %}status-shipped
+                {% elif order.status == 'delivered' %}status-delivered
+                {% elif order.status == 'cancelled' %}status-cancelled{% endif %}">
+                {% if order.status == 'pending' %}Đang xử lý
+                {% elif order.status == 'processing' %}Đang chuẩn bị
+                {% elif order.status == 'shipped' %}Đã gửi hàng
+                {% elif order.status == 'delivered' %}Đã giao hàng
+                {% elif order.status == 'cancelled' %}Đã hủy{% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Order Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">Chi tiết đơn hàng</h3>
+            </div>
+            <div class="card-body">
+                {% for item in order_items %}
+                <div class="order-item">
+                    <div class="row align-items-center">
+                        <!-- Product Image -->
+                        <div class="col-md-2 mb-2 mb-md-0">
+                            {% with main_image=item.product.images.all|dictsort:"is_main"|last %}
+                            {% if main_image %}
+                            <img src="{{ main_image.image.url }}" alt="{{ item.product.name }}" class="product-image">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 4px;">
+                                <i class="fas fa-image fa-2x text-secondary"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        
+                        <!-- Product Info -->
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <h5 class="mb-1">{{ item.product.name }}</h5>
+                            <p class="text-muted mb-0">{{ item.product.category.name }}</p>
+                        </div>
+                        
+                        <!-- Quantity and Price -->
+                        <div class="col-md-2 mb-2 mb-md-0 text-md-center">
+                            <span class="badge bg-secondary">{{ item.quantity }} x</span>
+                        </div>
+                        
+                        <!-- Subtotal -->
+                        <div class="col-md-2 text-md-end">
+                            <span class="fw-bold">{{ item.subtotal|floatformat:0 }} VND</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Order Summary -->
+                <div class="mt-4">
+                    <div class="summary-item">
+                        <span>Tạm tính:</span>
+                        <span>{{ order.order_total|floatformat:0 }} VND</span>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span>Phí vận chuyển:</span>
+                        <span>0 VND</span>
+                    </div>
+                    
+                    <div class="summary-item summary-total">
+                        <span>Tổng cộng:</span>
+                        <span>{{ order.order_total|floatformat:0 }} VND</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Shipping Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">Thông tin giao hàng</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Họ và tên:</strong> {{ order.full_name }}</p>
+                <p><strong>Điện thoại:</strong> {{ order.phone }}</p>
+                {% if order.email %}
+                <p><strong>Email:</strong> {{ order.email }}</p>
+                {% endif %}
+                <p><strong>Địa chỉ:</strong> {{ order.address }}</p>
+                <p><strong>Thành phố:</strong> {{ order.city }}</p>
+                <p><strong>Quốc gia:</strong> {{ order.country }}</p>
+                {% if order.postal_code %}
+                <p><strong>Mã bưu điện:</strong> {{ order.postal_code }}</p>
+                {% endif %}
+                {% if order.order_note %}
+                <p><strong>Ghi chú:</strong> {{ order.order_note }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Order Status -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Trạng thái đơn hàng</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Mã đơn hàng:</strong> {{ order.order_number }}</p>
+                <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Trạng thái:</strong> 
+                    {% if order.status == 'pending' %}
+                    <span class="badge bg-warning">Đang xử lý</span>
+                    {% elif order.status == 'processing' %}
+                    <span class="badge bg-info">Đang chuẩn bị</span>
+                    {% elif order.status == 'shipped' %}
+                    <span class="badge bg-primary">Đã gửi hàng</span>
+                    {% elif order.status == 'delivered' %}
+                    <span class="badge bg-success">Đã giao hàng</span>
+                    {% elif order.status == 'cancelled' %}
+                    <span class="badge bg-danger">Đã hủy</span>
+                    {% endif %}
+                </p>
+                <p class="mb-0"><strong>Phương thức thanh toán:</strong> Thanh toán khi nhận hàng (COD)</p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-4">
+            <a href="{% url 'order_history' %}" class="btn btn-secondary w-100 mb-2">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại lịch sử
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary w-100">
+                <i class="fas fa-shopping-cart me-2"></i>Tiếp tục mua sắm
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

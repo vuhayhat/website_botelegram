@@ -1,0 +1,4 @@
+mua hàng sẽ khi mua có 2 nút là thêm vào giỏ hàng và tiến hành mua nhập thông tin như địa chỉ số điện thoại , có ô nhập thông tin liên he nữa 
+    dùng api quốc tế có chọn quốc gia ,.... rồi đến chọn các cái khác 
+
+    khi đắtj xong thì có thêm chức năng thông báo cho admin qua telegram dể biết là có người đặt hàng nhé 

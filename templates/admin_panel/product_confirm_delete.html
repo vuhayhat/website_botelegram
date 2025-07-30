@@ -1,0 +1,126 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Delete Product - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        background-color: #343a40;
+        min-height: calc(100vh - 56px);
+        padding: 20px 0;
+    }
+    .admin-sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.75);
+        padding: 10px 20px;
+    }
+    .admin-sidebar .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .admin-sidebar .nav-link.active {
+        color: #fff;
+        background-color: #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="admin-sidebar">
+            <h5 class="text-white px-3 mb-3">Admin Panel</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_categories' %}">
+                        <i class="fas fa-folder me-2"></i> Categories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'admin_products' %}">
+                        <i class="fas fa-box me-2"></i> Products
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Delete Product</h2>
+            <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Products
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i> Warning!</h4>
+                    <p>Are you sure you want to delete the product <strong>"{{ object.name }}"</strong>?</p>
+                    <hr>
+                    <p class="mb-0">This action cannot be undone. All product images will be deleted as well.</p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Product Details
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                {% for image in object.images.all %}
+                                    {% if image.is_main %}
+                                    <img src="{{ image.image.url }}" alt="{{ object.name }}" class="img-thumbnail mb-2" style="max-height: 150px;">
+                                    {% endif %}
+                                {% empty %}
+                                <div class="bg-light text-center py-5 mb-2">
+                                    <i class="fas fa-box fa-3x text-secondary"></i>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-9">
+                                <h5>{{ object.name }}</h5>
+                                <p><strong>Category:</strong> {{ object.category.name }}</p>
+                                <p>{{ object.description|truncatewords:30 }}</p>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Price:</strong> {{ object.price }} VND</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Stock:</strong> {{ object.stock }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p>
+                                            <strong>Status:</strong> 
+                                            {% if object.is_available %}
+                                            <span class="badge bg-success">Available</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Unavailable</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i> Delete Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

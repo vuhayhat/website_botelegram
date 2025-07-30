@@ -1,0 +1,468 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block admin_title %}{% if form.instance.id %}Sửa sản phẩm{% else %}Thêm sản phẩm{% endif %} - Admin Panel{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'admin_products' %}">Sản phẩm</a></li>
+<li class="breadcrumb-item active" aria-current="page">{% if form.instance.id %}Sửa sản phẩm{% else %}Thêm sản phẩm{% endif %}</li>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .image-upload-area {
+        background-color: #f8f9fc;
+        border: 2px dashed #d1d3e2;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all var(--transition-speed);
+    }
+    
+    .image-upload-area:hover, .image-upload-area.highlight {
+        background-color: #eaecf4;
+    }
+    
+    .image-upload-area input[type="file"] {
+        display: none;
+    }
+    
+    .image-section {
+        background-color: #f8f9fc;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .image-section h5 {
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    #mainImagePreview {
+        display: none;
+        text-align: center;
+        position: relative;
+        margin-top: 1rem;
+    }
+    
+    #mainImagePreview img {
+        max-height: 200px;
+        border-radius: var(--border-radius);
+        border: 1px solid #e3e6f0;
+    }
+    
+    #additionalImagesPreview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .image-preview {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .image-preview img {
+        height: 120px;
+        width: auto;
+        border-radius: var(--border-radius);
+        border: 1px solid #e3e6f0;
+    }
+    
+    .image-preview .badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+    
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-speed);
+    }
+    
+    .delete-btn:hover {
+        background-color: var(--danger-color);
+        color: white;
+    }
+    
+    .set-main-container {
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+    
+    .tab-section {
+        background-color: #f8f9fc;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tab-section .nav-tabs {
+        border-bottom: none;
+        margin-bottom: 1rem;
+    }
+    
+    .tab-section .nav-link {
+        border: 1px solid transparent;
+        border-top-left-radius: 0.35rem;
+        border-top-right-radius: 0.35rem;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+    
+    .tab-section .nav-link.active {
+        color: var(--primary-color);
+        background-color: white;
+        border-color: #e3e6f0 #e3e6f0 white;
+    }
+    
+    .tab-section .tab-content {
+        background-color: white;
+        border: 1px solid #e3e6f0;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+    }
+    
+    .display-order-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px 15px;
+        margin-top: 10px;
+        border-left: 4px solid #4e73df;
+    }
+    
+    .display-order-info h6 {
+        margin-bottom: 8px;
+        color: #4e73df;
+    }
+    
+    .display-order-info p {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+    
+    .display-order-info ul {
+        padding-left: 20px;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if form.instance.id %}
+            Sửa sản phẩm: {{ form.instance.name }}
+            {% else %}
+            Thêm sản phẩm mới
+            {% endif %}
+        </h1>
+        <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Product Form Card -->
+    <div class="card admin-card">
+        <div class="card-header">
+            <h5>
+                {% if form.instance.id %}
+                <i class="fas fa-edit me-2"></i>Sửa thông tin sản phẩm
+                {% else %}
+                <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="admin-form" id="productForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Basic Info Tab Section -->
+                        <div class="tab-section">
+                            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">
+                                        <i class="fas fa-info-circle me-2"></i>Thông tin cơ bản
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="display-tab" data-bs-toggle="tab" data-bs-target="#display" type="button" role="tab" aria-controls="display" aria-selected="false">
+                                        <i class="fas fa-eye me-2"></i>Hiển thị & SEO
+                                    </button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content" id="productTabsContent">
+                                <!-- Basic Info Tab -->
+                                <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                                    <div class="mb-3">
+                                        <label for="id_category" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                        <select name="category" id="id_category" class="form-select {% if form.category.errors %}is-invalid{% endif %}" required>
+                                            <option value="">Chọn danh mục</option>
+                                            {% for category in form.fields.category.queryset %}
+                                            <option value="{{ category.id }}" {% if form.category.value|stringformat:"i" == category.id|stringformat:"i" %}selected{% endif %}>
+                                                {{ category.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.category.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.category.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" id="id_name" value="{{ form.name.value|default:'' }}" class="form-control {% if form.name.errors %}is-invalid{% endif %}" required>
+                                        {% if form.name.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.name.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_description" class="form-label">Mô tả <span class="text-danger">*</span></label>
+                                        <textarea name="description" id="id_description" class="form-control {% if form.description.errors %}is-invalid{% endif %}" rows="5" required>{{ form.description.value|default:'' }}</textarea>
+                                        {% if form.description.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.description.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="id_price" class="form-label">Giá (VND) <span class="text-danger">*</span></label>
+                                                <input type="number" name="price" id="id_price" value="{{ form.price.value|default:'' }}" class="form-control {% if form.price.errors %}is-invalid{% endif %}" step="1000" min="0" required>
+                                                {% if form.price.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.price.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="id_stock" class="form-label">Số lượng trong kho <span class="text-danger">*</span></label>
+                                                <input type="number" name="stock" id="id_stock" value="{{ form.stock.value|default:'' }}" class="form-control {% if form.stock.errors %}is-invalid{% endif %}" min="0" required>
+                                                {% if form.stock.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.stock.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_available" id="id_is_available" {% if form.is_available.value %}checked{% endif %}>
+                                        <label class="form-check-label" for="id_is_available">Đang bán (hiển thị trên trang web)</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Display & SEO Tab -->
+                                <div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="id_display_order" class="form-label">Thứ tự hiển thị</label>
+                                            <input type="number" name="display_order" id="id_display_order" value="{{ form.display_order.value|default:'0' }}" class="form-control {% if form.display_order.errors %}is-invalid{% endif %}" min="0">
+                                            <div class="form-text">0 = Off (không hiển thị), 1 = đầu tiên, 2 = thứ hai, v.v.</div>
+                                            {% if form.display_order.errors %}
+                                            <div class="invalid-feedback">
+                                                {{ form.display_order.errors }}
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="display-order-info">
+                                                <h6><i class="fas fa-info-circle me-1"></i> Thông tin thêm</h6>
+                                                <p>Khi chọn một vị trí đã tồn tại:</p>
+                                                <ul>
+                                                    <li>Hệ thống sẽ tự động dịch chuyển các sản phẩm khác</li>
+                                                    <li>Sản phẩm này sẽ được chèn vào vị trí đã chọn</li>
+                                                    <li>Các sản phẩm có vị trí ≥ vị trí đã chọn sẽ dịch lên 1 bậc</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label class="form-label d-block">Sản phẩm nổi bật</label>
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" name="is_featured" id="id_is_featured" {% if form.is_featured.value %}checked{% endif %}>
+                                                <label class="form-check-label" for="id_is_featured">Hiển thị ở trang chủ</label>
+                                            </div>
+                                            {% if form.is_featured.errors %}
+                                            <div class="text-danger">
+                                                {{ form.is_featured.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_meta_title" class="form-label">Meta Title</label>
+                                        <input type="text" name="meta_title" id="id_meta_title" value="{{ form.meta_title.value|default:'' }}" class="form-control">
+                                        <div class="form-text">Tiêu đề hiển thị trên kết quả tìm kiếm (tối đa 60-70 ký tự)</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_meta_description" class="form-label">Meta Description</label>
+                                        <textarea name="meta_description" id="id_meta_description" class="form-control" rows="2">{{ form.meta_description.value|default:'' }}</textarea>
+                                        <div class="form-text">Mô tả hiển thị trên kết quả tìm kiếm (tối đa 150-160 ký tự)</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_meta_keywords" class="form-label">Meta Keywords</label>
+                                        <input type="text" name="meta_keywords" id="id_meta_keywords" value="{{ form.meta_keywords.value|default:'' }}" class="form-control">
+                                        <div class="form-text">Các từ khóa phân cách bằng dấu phẩy</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <!-- Main Image Section -->
+                        <div class="image-section">
+                            <h5><i class="fas fa-image me-2"></i>Ảnh chính</h5>
+                            
+                            <!-- Main Image Upload Area -->
+                            <div class="image-upload-area" id="mainImageDropArea">
+                                <input type="file" name="main_image" id="id_main_image" accept="image/*">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <p class="mb-0">Kéo thả hoặc nhấn vào đây để tải ảnh chính</p>
+                                <p class="small text-muted">PNG, JPG, JPEG (tối đa 2MB)</p>
+                            </div>
+                            
+                            <!-- Main Image Preview -->
+                            <div id="mainImagePreview" {% if not main_image %}style="display: none;"{% endif %}>
+                                {% if main_image %}
+                                <img src="{{ main_image.image.url }}" alt="Main product image" class="img-fluid">
+                                <div class="delete-btn" id="deleteMainImage" data-bs-toggle="tooltip" title="Xóa ảnh">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Images Section -->
+                        <div class="image-section">
+                            <h5><i class="fas fa-images me-2"></i>Ảnh phụ</h5>
+                            
+                            <!-- Additional Images Upload Area -->
+                            <div class="image-upload-area" id="additionalImagesDropArea">
+                                <input type="file" name="additional_images" id="id_additional_images" multiple accept="image/*">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <p class="mb-0">Kéo thả hoặc nhấn vào đây để tải ảnh phụ</p>
+                                <p class="small text-muted">Có thể chọn nhiều ảnh cùng lúc</p>
+                            </div>
+                            
+                            <!-- Additional Images Preview -->
+                            <div id="additionalImagesPreview">
+                                {% if form.instance.id %}
+                                    {% for image in form.instance.images.all %}
+                                        {% if not image.is_main %}
+                                        <div class="image-preview">
+                                            <img src="{{ image.image.url }}" alt="Product image" class="img-fluid">
+                                            <div class="delete-btn delete-additional-image" data-image-id="{{ image.id }}" data-bs-toggle="tooltip" title="Xóa ảnh">
+                                                <i class="fas fa-times"></i>
+                                            </div>
+                                            <div class="set-main-container">
+                                                <div class="form-check">
+                                                    <input class="form-check-input set-as-main" type="radio" name="set_as_main" value="{{ image.id }}" id="set_main_{{ image.id }}">
+                                                    <label class="form-check-label" for="set_main_{{ image.id }}">
+                                                        Đặt làm ảnh chính
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if form.instance.id %}Cập nhật sản phẩm{% else %}Tạo sản phẩm{% endif %}
+                    </button>
+                </div>
+                
+                <!-- Hidden inputs for image management -->
+                <input type="hidden" name="deleted_images" id="deleted_images" value="">
+                <input type="hidden" name="deleted_main_image" id="deleted_main_image" value="false">
+                <input type="hidden" name="main_image_id" id="main_image_id" value="">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+{% load static %}
+<script src="{% static 'js/admin.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tabs
+        const triggerTabList = [].slice.call(document.querySelectorAll('#productTabs button'));
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl);
+            
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+        
+        // Get main image for preview
+        {% if form.instance.id %}
+            {% with main_image=form.instance.images.all|dictsort:"is_main"|last %}
+                {% if main_image and main_image.is_main %}
+                const mainImagePreview = document.getElementById('mainImagePreview');
+                const mainImageDropArea = document.getElementById('mainImageDropArea');
+                if (mainImagePreview) mainImagePreview.style.display = 'block';
+                if (mainImageDropArea) mainImageDropArea.style.display = 'none';
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    });
+</script>
+{% endblock %} 

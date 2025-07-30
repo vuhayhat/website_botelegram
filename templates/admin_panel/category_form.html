@@ -1,0 +1,354 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block admin_title %}{% if form.instance.pk %}Sửa danh mục{% else %}Thêm danh mục{% endif %} - Admin Panel{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'admin_categories' %}">Danh mục</a></li>
+<li class="breadcrumb-item active" aria-current="page">{% if form.instance.pk %}Sửa danh mục{% else %}Thêm danh mục{% endif %}</li>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .image-preview-container {
+        position: relative;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .image-preview-container img {
+        max-height: 150px;
+        border-radius: var(--border-radius);
+        border: 1px solid #e3e6f0;
+    }
+    
+    .image-preview-container .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+        cursor: pointer;
+        transition: all var(--transition-speed);
+    }
+    
+    .image-preview-container .remove-image:hover {
+        background-color: var(--danger-color);
+        color: white;
+    }
+    
+    .display-order-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px 15px;
+        margin-top: 10px;
+        border-left: 4px solid #4e73df;
+    }
+    
+    .display-order-info h6 {
+        margin-bottom: 8px;
+        color: #4e73df;
+    }
+    
+    .display-order-info p {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+    
+    .display-order-info ul {
+        padding-left: 20px;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Sửa danh mục{% else %}Thêm danh mục{% endif %}</h1>
+        <a href="{% url 'admin_categories' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Category Form Card -->
+    <div class="card admin-card">
+        <div class="card-header">
+            <h5>
+                {% if form.instance.pk %}
+                <i class="fas fa-edit me-2"></i>Sửa danh mục: {{ form.instance.name }}
+                {% else %}
+                <i class="fas fa-plus me-2"></i>Thêm danh mục mới
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="admin-form">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Basic Info -->
+                        <div class="mb-4">
+                            <h6 class="text-primary fw-bold mb-3">Thông tin cơ bản</h6>
+                            
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="id_name" name="name" value="{{ form.instance.name|default:'' }}" required>
+                                {% if form.name.errors %}
+                                    <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Tên hiển thị của danh mục trên trang web.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_description" class="form-label">Mô tả</label>
+                                <textarea class="form-control" id="id_description" name="description" rows="4">{{ form.instance.description|default:'' }}</textarea>
+                                {% if form.description.errors %}
+                                    <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Mô tả ngắn về danh mục này (không bắt buộc).</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Display Settings -->
+                        <div class="mb-4">
+                            <h6 class="text-primary fw-bold mb-3">Cài đặt hiển thị</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_display_order" class="form-label">Thứ tự hiển thị</label>
+                                    <input type="number" name="display_order" id="id_display_order" value="{{ form.instance.display_order|default:'0' }}" class="form-control" min="0">
+                                    {% if form.display_order.errors %}
+                                        <div class="text-danger mt-1">{{ form.display_order.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">0 = Off (không hiển thị), 1 = đầu tiên, 2 = thứ hai, v.v.</div>
+                                    
+                                    <div class="display-order-info">
+                                        <h6><i class="fas fa-info-circle me-1"></i> Thông tin thêm</h6>
+                                        <p>Khi chọn một vị trí đã tồn tại:</p>
+                                        <ul>
+                                            <li>Hệ thống sẽ tự động dịch chuyển các danh mục khác</li>
+                                            <li>Danh mục này sẽ được chèn vào vị trí đã chọn</li>
+                                            <li>Các danh mục có vị trí ≥ vị trí đã chọn sẽ dịch lên 1 bậc</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label d-block">Trạng thái</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.instance.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="id_is_active">Hiển thị danh mục này</label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="text-danger mt-1">{{ form.is_active.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">Khi tắt, danh mục sẽ không hiển thị trên trang web.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <!-- Image Upload -->
+                        <div class="mb-4">
+                            <h6 class="text-primary fw-bold mb-3">Hình ảnh danh mục</h6>
+                            
+                            <div class="image-upload-area" id="imageDropArea">
+                                <input type="file" class="form-control d-none" id="id_image" name="image" accept="image/*">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-0">Kéo thả hoặc nhấn vào đây để tải lên</p>
+                                    <p class="small text-muted">PNG, JPG, JPEG (tối đa 2MB)</p>
+                                </div>
+                            </div>
+                            
+                            {% if form.instance.image %}
+                            <div class="image-preview-container text-center" id="imagePreviewContainer">
+                                <img src="{{ form.instance.image.url }}" alt="{{ form.instance.name }}" class="img-fluid">
+                                <div class="remove-image" id="removeImage" data-bs-toggle="tooltip" title="Xóa ảnh">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2 d-none" id="imageClearContainer">
+                                <input class="form-check-input" type="checkbox" id="id_image-clear" name="image-clear">
+                                <label class="form-check-label" for="id_image-clear">
+                                    Xóa ảnh hiện tại
+                                </label>
+                            </div>
+                            {% endif %}
+                            
+                            {% if form.image.errors %}
+                                <div class="text-danger mt-1">{{ form.image.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'admin_categories' %}" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if form.instance.pk %}Cập nhật danh mục{% else %}Tạo danh mục{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image upload preview
+        const imageDropArea = document.getElementById('imageDropArea');
+        const imageInput = document.getElementById('id_image');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imageClearContainer = document.getElementById('imageClearContainer');
+        const imageClearCheckbox = document.getElementById('id_image-clear');
+        const removeImageBtn = document.getElementById('removeImage');
+        
+        // Click on drop area to trigger file input
+        if (imageDropArea) {
+            imageDropArea.addEventListener('click', function() {
+                imageInput.click();
+            });
+        }
+        
+        // Handle file selection
+        if (imageInput) {
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // Create preview if it doesn't exist
+                        if (!imagePreviewContainer) {
+                            const newPreviewContainer = document.createElement('div');
+                            newPreviewContainer.className = 'image-preview-container text-center';
+                            newPreviewContainer.id = 'imagePreviewContainer';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-fluid';
+                            img.alt = 'Category preview';
+                            
+                            const removeBtn = document.createElement('div');
+                            removeBtn.className = 'remove-image';
+                            removeBtn.id = 'removeImage';
+                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                            removeBtn.setAttribute('data-bs-toggle', 'tooltip');
+                            removeBtn.setAttribute('title', 'Xóa ảnh');
+                            
+                            newPreviewContainer.appendChild(img);
+                            newPreviewContainer.appendChild(removeBtn);
+                            
+                            imageDropArea.insertAdjacentElement('afterend', newPreviewContainer);
+                            
+                            // Add event listener to new remove button
+                            document.getElementById('removeImage').addEventListener('click', removeImage);
+                        } else {
+                            // Update existing preview
+                            const img = imagePreviewContainer.querySelector('img');
+                            img.src = e.target.result;
+                            imagePreviewContainer.style.display = 'inline-block';
+                        }
+                        
+                        // Hide drop area
+                        imageDropArea.style.display = 'none';
+                    };
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Remove image function
+        function removeImage() {
+            if (imagePreviewContainer) {
+                imagePreviewContainer.style.display = 'none';
+            }
+            
+            if (imageInput) {
+                imageInput.value = '';
+            }
+            
+            if (imageClearCheckbox) {
+                imageClearCheckbox.checked = true;
+            }
+            
+            if (imageDropArea) {
+                imageDropArea.style.display = 'block';
+            }
+        }
+        
+        // Add event listener to remove button if it exists
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', removeImage);
+        }
+        
+        // Drag and drop functionality
+        if (imageDropArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                imageDropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                imageDropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                imageDropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                imageDropArea.classList.add('bg-light');
+            }
+            
+            function unhighlight() {
+                imageDropArea.classList.remove('bg-light');
+            }
+            
+            imageDropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files && files.length) {
+                    imageInput.files = files;
+                    // Trigger change event
+                    const event = new Event('change', { bubbles: true });
+                    imageInput.dispatchEvent(event);
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

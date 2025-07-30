@@ -1,0 +1,5 @@
+Django>=5.2.0
+Pillow>=9.0.0  # For image processing
+django-crispy-forms>=2.0.0  # For better form rendering
+django-allauth>=0.54.0  # For Google authentication
+python-dotenv>=1.0.0  # For environment variables 

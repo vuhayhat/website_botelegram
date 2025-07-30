@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% block admin_title %}Admin Panel{% endblock %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% block admin_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    {% include 'admin_panel/sidebar.html' %}
+    
+    <!-- Main Content -->
+    <div class="admin-content">
+        <!-- Header -->
+        <div class="admin-header">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Admin</a></li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </nav>
+            <div class="admin-header-right">
+                <div class="dropdown">
+                    <a href="#" class="btn btn-light btn-sm dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ request.user.get_full_name|default:request.user.phone_number }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'home' %}"><i class="fas fa-store me-2"></i>Xem cửa hàng</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle sidebar on mobile
+        const sidebarToggler = document.querySelector('.sidebar-toggler');
+        if (sidebarToggler) {
+            sidebarToggler.addEventListener('click', function() {
+                document.querySelector('.admin-sidebar').classList.toggle('expanded');
+            });
+        }
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% block admin_extra_js %}{% endblock %}
+{% endblock %} 
