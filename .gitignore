@@ -1,0 +1,25 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+env/
+.env
+
+# Django
+*.log
+*.sqlite3
+media/
+static_collected/
+staticfiles/# Python
+*.pyc
+__pycache__/
+venv/
+env/
+.env
+
+# Django
+*.log
+*.sqlite3
+media/
+static_collected/
+staticfiles/
