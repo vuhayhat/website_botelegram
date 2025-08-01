@@ -23,4 +23,5 @@ urlpatterns = [
     path('orders/', views.OrderListView.as_view(), name='admin_orders'),
     path('orders/update-status/', views.update_order_status, name='admin_update_order_status'),
     path('orders/<str:order_number>/', views.OrderDetailView.as_view(), name='admin_order_detail'),
+    path('orders/<str:order_number>/detail/', views.order_detail_ajax, name='admin_order_detail_ajax'),
 ] 

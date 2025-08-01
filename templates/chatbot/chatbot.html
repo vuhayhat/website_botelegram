@@ -1,16 +1,119 @@
-<!-- chatbot/chatbot.html -->
-<div id="chatbot-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    <button onclick="toggleChat()" class="btn btn-primary rounded-circle">
-        <i class="fas fa-comment-dots"></i>
-    </button>
-    <div id="chat-box" style="display:none; width: 300px; height: 400px; background: white; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.3); margin-top: 10px;">
-        <iframe src="{% url 'chatbot_view' %}" width="100%" height="100%" frameborder="0"></iframe>
+<!-- chatbot.html -->
+<div id="chatbot-container">
+    <div id="chat-header" onclick="toggleChat()">💬 ChatBot Vũ</div>
+    <div id="chat-body">
+        <div id="chat-box"></div>
+
+        <!-- Các nút gợi ý -->
+        <div id="quick-replies">
+            <button onclick="sendQuickMessage('bạn là ai')">Bạn là ai?</button>
+            <button onclick="sendQuickMessage('liên hệ')">Liên hệ</button>
+            <button onclick="sendQuickMessage('dự án')">Dự án</button>
+        </div>
+
+        <!-- Nhập thủ công -->
+        <input type="text" id="user-input" placeholder="Hỏi gì đi..." onkeydown="if(event.key==='Enter') sendMessage();">
+        <button onclick="sendMessage()">Gửi</button>
     </div>
 </div>
 
+<style>
+#chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    font-family: Arial, sans-serif;
+    z-index: 9999;
+}
+
+#chat-header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+#chat-body {
+    display: none;
+    border: 1px solid #ccc;
+    border-top: none;
+    background: white;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#chat-box {
+    padding: 10px;
+    height: 180px;
+    overflow-y: auto;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+#quick-replies {
+    text-align: center;
+    margin: 5px 0;
+}
+
+#quick-replies button {
+    margin: 2px;
+    padding: 5px 8px;
+    font-size: 13px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#quick-replies button:hover {
+    background-color: #e0e0e0;
+}
+
+#user-input {
+    width: 70%;
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ccc;
+}
+
+#chat-body button:last-child {
+    padding: 5px 10px;
+    margin: 5px;
+}
+</style>
+
 <script>
-    function toggleChat() {
-        const chatBox = document.getElementById("chat-box");
-        chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+function toggleChat() {
+    const body = document.getElementById("chat-body");
+    body.style.display = (body.style.display === "none" || body.style.display === "") ? "block" : "none";
+}
+
+function sendQuickMessage(text) {
+    document.getElementById("user-input").value = text;
+    sendMessage();
+}
+
+function sendMessage() {
+    const msg = document.getElementById("user-input").value.trim();
+    if (!msg) return;
+    const box = document.getElementById("chat-box");
+    box.innerHTML += `<div><b>Bạn:</b> ${msg}</div>`;
+
+    let reply = "Xin lỗi, tôi chưa hiểu câu hỏi.";
+    if (msg.includes("bạn là ai")) {
+        reply = "Tôi là Vũ - lập trình viên Python/Django.";
+    } else if (msg.includes("liên hệ")) {
+        reply = "Bạn có thể liên hệ qua Telegram: @your_username hoặc email: you@example.com";
+    } else if (msg.includes("dự án")) {
+        reply = "Tôi đang phát triển hệ thống bán hàng tích hợp chatbot Telegram.";
     }
+
+    box.innerHTML += `<div><b>Bot:</b> ${reply}</div>`;
+    document.getElementById("user-input").value = "";
+    box.scrollTop = box.scrollHeight;
+}
 </script>

@@ -564,3 +564,114 @@ class OrderDetailView(AdminRequiredMixin, DetailView):
         context['order_items'] = self.object.items.all()
         context['title'] = f'Chi tiết đơn hàng {self.object.order_number}'
         return context
+
+
+# Order Detail AJAX View
+def order_detail_ajax(request, order_number):
+    """AJAX view để lấy chi tiết đơn hàng"""
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({
+            'success': False,
+            'message': 'Không có quyền truy cập'
+        })
+    
+    try:
+        order = get_object_or_404(Order, order_number=order_number, is_ordered=True)
+        order_items = order.items.all()
+        
+        # Tạo HTML cho chi tiết đơn hàng
+        html_content = f"""
+        <div class="row">
+            <div class="col-md-6">
+                <div class="order-detail-header">
+                    <h6><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
+                    <p class="mb-1"><strong>Tên:</strong> {order.full_name}</p>
+                    <p class="mb-1"><strong>Số điện thoại:</strong> {order.phone}</p>
+                    <p class="mb-1"><strong>Email:</strong> {order.email or 'Không có'}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="order-detail-header">
+                    <h6><i class="fas fa-shipping-fast me-2"></i>Thông tin giao hàng</h6>
+                    <p class="mb-1"><strong>Địa chỉ:</strong> {order.address}</p>
+                    <p class="mb-1"><strong>Thành phố:</strong> {order.city}</p>
+                    <p class="mb-1"><strong>Quốc gia:</strong> {order.country}</p>
+                    {f'<p class="mb-1"><strong>Mã bưu điện:</strong> {order.postal_code}</p>' if order.postal_code else ''}
+                    {f'<p class="mb-1"><strong>Ghi chú:</strong> {order.order_note}</p>' if order.order_note else ''}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card admin-card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-box me-2"></i>Sản phẩm</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="order-products">
+        """
+        
+        for item in order_items:
+            # Lấy hình ảnh chính của sản phẩm
+            main_image = item.product.images.filter(is_main=True).first()
+            image_html = ''
+            if main_image:
+                image_html = f'<img src="{main_image.image.url}" alt="{item.product.name}" class="order-product-image">'
+            else:
+                image_html = '<div class="bg-light rounded d-flex align-items-center justify-content-center order-product-image"><i class="fas fa-box text-secondary"></i></div>'
+            
+            html_content += f"""
+                    <div class="order-product">
+                        {image_html}
+                        <div class="order-product-details">
+                            <div class="fw-bold">{item.product.name}</div>
+                            <div class="small text-muted">Số lượng: {item.quantity}</div>
+                            <div class="small text-muted">Giá: {item.price:,.0f} VND</div>
+                        </div>
+                        <div class="order-product-price">
+                            {item.subtotal:,.0f} VND
+                        </div>
+                    </div>
+            """
+        
+        html_content += f"""
+                </div>
+                <div class="p-3 bg-light border-top">
+                    <div class="d-flex justify-content-between">
+                        <div class="fw-bold">Tổng cộng:</div>
+                        <div class="fw-bold">{order.order_total:,.0f} VND</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card admin-card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Mã đơn hàng:</strong> {order.order_number}</p>
+                        <p class="mb-1"><strong>Ngày đặt:</strong> {order.created_at.strftime('%d/%m/%Y %H:%M')}</p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> {dict(order.STATUS_CHOICES).get(order.status, order.status)}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>IP đặt hàng:</strong> {order.ip or 'Không có'}</p>
+                        <p class="mb-1"><strong>Cập nhật lần cuối:</strong> {order.updated_at.strftime('%d/%m/%Y %H:%M')}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """
+        
+        return JsonResponse({
+            'success': True,
+            'html': html_content
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Lỗi: {str(e)}'
+        })
+

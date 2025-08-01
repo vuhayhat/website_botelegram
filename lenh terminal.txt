@@ -1,0 +1,9 @@
+tree -a -I 'venv|__pycache__|*.pyc|.git|*.sqlite3|*.log|node_modules|*.egg-info'
+
+
+
+lenh xuat cau truc tree -a -I 'venv|__pycache__|*.pyc|.git|*.sqlite3|*.log|node_modules|*.egg-info'
+
+
+
+

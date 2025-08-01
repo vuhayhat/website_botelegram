@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('store.urls')),
     path('accounts/', include('accounts.urls')),
     path('admin/', include('admin_panel.urls')),
+    path('chatbot/', include('chatbot.urls')),
 ]
 
 if settings.DEBUG:

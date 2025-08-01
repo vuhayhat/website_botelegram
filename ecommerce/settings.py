@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'store',
     'accounts',
     'admin_panel',
+    'chatbot',
 ]
 
 MIDDLEWARE = [

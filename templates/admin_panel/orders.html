@@ -202,25 +202,59 @@
                 </table>
             </div>
         </div>
+        {% if is_paginated %}
         <div class="card-footer bg-white">
             <nav aria-label="Orders pagination">
                 <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
                     <li class="page-item disabled">
                         <a class="page-link" href="#" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
                     <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
                         <a class="page-link" href="#" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
+        {% endif %}
     </div>
     
     <!-- Modal xem chi tiết đơn hàng -->
@@ -228,94 +262,19 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #ORD-001</h5>
+                    <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="order-detail-header">
-                                <h6><i class="fas fa-user me-2"></i>Thông tin khách hàng</h6>
-                                <p class="mb-1"><strong>Tên:</strong> Nguyễn Văn A</p>
-                                <p class="mb-1"><strong>Số điện thoại:</strong> 0123456789</p>
-                                <p class="mb-1"><strong>Email:</strong> nguyenvana@example.com</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="order-detail-header">
-                                <h6><i class="fas fa-shipping-fast me-2"></i>Thông tin giao hàng</h6>
-                                <p class="mb-1"><strong>Địa chỉ:</strong> 123 Đường ABC, Quận XYZ, TP. HCM</p>
-                                <p class="mb-1"><strong>Ghi chú:</strong> Giao hàng giờ hành chính</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card admin-card mb-3">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-box me-2"></i>Sản phẩm</h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="order-products">
-                                <div class="order-product">
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center order-product-image">
-                                        <i class="fas fa-box text-secondary"></i>
-                                    </div>
-                                    <div class="order-product-details">
-                                        <div class="fw-bold">Sản phẩm A</div>
-                                        <div class="small text-muted">Số lượng: 2</div>
-                                    </div>
-                                    <div class="order-product-price">
-                                        500,000 VND x 2
-                                    </div>
-                                </div>
-                                <div class="order-product">
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center order-product-image">
-                                        <i class="fas fa-box text-secondary"></i>
-                                    </div>
-                                    <div class="order-product-details">
-                                        <div class="fw-bold">Sản phẩm B</div>
-                                        <div class="small text-muted">Số lượng: 1</div>
-                                    </div>
-                                    <div class="order-product-price">
-                                        500,000 VND x 1
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-3 bg-light border-top">
-                                <div class="d-flex justify-content-between">
-                                    <div class="fw-bold">Tổng cộng:</div>
-                                    <div class="fw-bold">1,500,000 VND</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card admin-card">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Trạng thái đơn hàng</h6>
-                        </div>
-                        <div class="card-body">
-                            <form id="updateStatusForm">
-                                <div class="mb-3">
-                                    <label for="orderStatus" class="form-label">Cập nhật trạng thái</label>
-                                    <select class="form-select" id="orderStatus">
-                                        <option value="pending">Chờ xử lý</option>
-                                        <option value="processing">Đang xử lý</option>
-                                        <option value="completed">Hoàn thành</option>
-                                        <option value="cancelled">Đã hủy</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="statusNote" class="form-label">Ghi chú</label>
-                                    <textarea class="form-control" id="statusNote" rows="2" placeholder="Ghi chú về việc thay đổi trạng thái (không bắt buộc)"></textarea>
-                                </div>
-                            </form>
+                <div class="modal-body" id="orderDetailContent">
+                    <!-- Content will be loaded dynamically -->
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="saveStatusBtn">Lưu thay đổi</button>
                 </div>
             </div>
         </div>
@@ -336,7 +295,8 @@
                             <select class="form-select" id="quickOrderStatus">
                                 <option value="pending">Chờ xử lý</option>
                                 <option value="processing">Đang xử lý</option>
-                                <option value="completed">Hoàn thành</option>
+                                <option value="shipped">Đã gửi hàng</option>
+                                <option value="delivered">Đã giao hàng</option>
                                 <option value="cancelled">Đã hủy</option>
                             </select>
                         </div>
@@ -386,8 +346,38 @@
                 const orderId = this.getAttribute('data-order-id');
                 document.getElementById('orderDetailModalLabel').textContent = `Chi tiết đơn hàng #${orderId}`;
                 
-                // Ở đây sẽ là code để tải dữ liệu đơn hàng từ server
-                // Hiện tại chỉ hiển thị modal với dữ liệu mẫu
+                // Load order details via AJAX
+                const orderDetailContent = document.getElementById('orderDetailContent');
+                orderDetailContent.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Fetch order details
+                fetch(`/admin/orders/${orderId}/detail/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            orderDetailContent.innerHTML = data.html;
+                        } else {
+                            orderDetailContent.innerHTML = `
+                                <div class="alert alert-danger">
+                                    Không thể tải thông tin đơn hàng: ${data.message}
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        orderDetailContent.innerHTML = `
+                            <div class="alert alert-danger">
+                                Có lỗi xảy ra khi tải thông tin đơn hàng
+                            </div>
+                        `;
+                    });
                 
                 const orderDetailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
                 orderDetailModal.show();
@@ -409,14 +399,6 @@
             });
         });
         
-        // Save status changes
-        document.getElementById('saveStatusBtn').addEventListener('click', function() {
-            // Ở đây sẽ là code để lưu thay đổi trạng thái đơn hàng
-            alert('Đã cập nhật trạng thái đơn hàng!');
-            const orderDetailModal = bootstrap.Modal.getInstance(document.getElementById('orderDetailModal'));
-            orderDetailModal.hide();
-        });
-        
         // Quick save status changes
         document.getElementById('quickSaveStatusBtn').addEventListener('click', function() {
             const form = document.getElementById('quickUpdateStatusForm');
@@ -424,7 +406,7 @@
             const newStatus = document.getElementById('quickOrderStatus').value;
             const note = document.getElementById('quickStatusNote').value;
             
-            // Hiển thị loading
+            // Hi��n thị loading
             const saveBtn = document.getElementById('quickSaveStatusBtn');
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
@@ -434,7 +416,7 @@
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             
             // Gửi request cập nhật trạng thái
-            fetch('{% url "admin_update_order_status" %}', {
+            fetch('/admin/orders/update-status/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -491,6 +473,9 @@
                     // Đóng modal
                     const updateStatusModal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
                     updateStatusModal.hide();
+                    
+                    // Reset form
+                    document.getElementById('quickStatusNote').value = '';
                 } else {
                     showAlert('danger', data.message);
                 }
@@ -528,4 +513,4 @@
         }
     });
 </script>
-{% endblock %} 
+{% endblock %}

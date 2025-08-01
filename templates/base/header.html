@@ -2,8 +2,6 @@
 <li class="nav-item">
     <a class="nav-link" href="{% url 'cart' %}">
         <i class="fas fa-shopping-cart"></i>
-        {% if request.session.cart_id %}
-        <span class="badge rounded-pill bg-danger cart-count">{{ cart_count }}</span>
-        {% endif %}
+        <span class="badge rounded-pill bg-danger cart-count {% if cart_count == 0 %}d-none{% endif %}">{{ cart_count }}</span>
     </a>
 </li> 
